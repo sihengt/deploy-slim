@@ -142,6 +142,7 @@ RUN sudo /bin/sh -c 'echo "deb http://packages.osrfoundation.org/gazebo/ubuntu-s
   ros-melodic-rqt-gui-cpp \
   ros-melodic-rviz \
   ros-melodic-tf2-geometry-msgs \
+  ros-melodic-rosbash \
  && sudo apt-get clean \
  && sudo rm -rf /var/lib/apt/lists/*
 # force a rosdep update

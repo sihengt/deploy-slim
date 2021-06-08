@@ -12,12 +12,14 @@ then
 fi
 
 docker run -it \
+    --privileged \
+    --rm \
     --env="DISPLAY=$DISPLAY" \
     --env="QT_X11_NO_MITSHM=1" \
     --volume="/tmp/.X11-unix:/tmp/.X11-unix:rw" \
     --env="XAUTHORITY=$XAUTH" \
     --volume="$XAUTH:$XAUTH" \
     --runtime=nvidia \
-    cmu-melodic-gpu:1.1 \
+    cmu-melodic-gpu:1.2 \
     bash
 
