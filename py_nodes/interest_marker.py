@@ -19,13 +19,13 @@ from interestingness.online import level_height
 
 int_ros_dir = get_package_share_directory('interestingness_ros')
 int_dir = os.path.join(int_ros_dir,'interestingness')
-sys.path.append(pack_path)
-sys.path.append(interestingness_path)
+sys.path.append(int_ros_dir)
+sys.path.append(int_dir)
+
 
 class InterestMarker(Node):
-    
+
     def __init__(self):
-    
         super().__init__("interestmarker_node") 
         self.declare_parameter('min-level', 0.1, ParameterDescriptor(description='minimum interest level to show')) # removed relative as param is local to this node
         self.min_level = self.get_parameter('min-level').value
