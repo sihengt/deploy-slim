@@ -1,4 +1,4 @@
-Header header 
+std_msgs/Header header 
 
 # The interestingness level, probabilities are in the range [0, 1].
 float32 level
