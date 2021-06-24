@@ -1,16 +1,15 @@
 import os
 
-from ament_index_python.packages import get_package_share_directory
+# from ament_index_python.packages import get_package_share_directory
 from launch import LaunchDescription
 from launch_ros.actions import Node
 
 def generate_launch_description():
-
-    model_dir = get_package_share_directory('interestingness_ros')
-    model_path = os.path.join(model_dir, 'saves/vgg16.pt.SubTF.n100usage.mse')
+    int_dir = ('/root/ros2_ws/src/interestingness_ros/interestingness')
+    model_path = os.path.join(int_dir, 'saves/vgg16.pt.SubTF.n100usage.mse')
 
     interestingness_node = Node(package="interestingness_ros",
-                                executable="interestingness_node.py",
+                                executable="interestingness_node",
                                 name="interestingness_node",
                                 output="screen",
                                 parameters=[
@@ -27,7 +26,7 @@ def generate_launch_description():
                            )
 
     interestmarker_node = Node(package="interestingness_ros",
-                               executable="interest_marker.py",
+                               executable="interest_marker_node",
                                name="interestmarker_node",
                                output="log",
                                # remappings=[

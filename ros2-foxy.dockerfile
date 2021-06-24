@@ -36,6 +36,7 @@ RUN git clone https://github.com/ros-perception/vision_opencv.git
 RUN cd vision_opencv && git checkout ros2 # colcon build --package-select cv_bridge
 
 ## Start container, mount packages to src/ and colcon build the 3 packages.
+## Download the copy the weights file into interestingness/saves/
 
 
 ## For new package, Set up node package. Copy out package and mount subsequently.

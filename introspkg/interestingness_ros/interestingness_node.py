@@ -1,8 +1,9 @@
 '''
-TODO: replace rospy.numpy_msg with ros2 equivalent
-TODO: check if pillow (also PIL) needs to be added. PIL is for python2
+Subscribes to image_topic & interaction_topic.
+Publishes to  interestingness/image & interestingness/info.
+TODO: test if interaction callback and info_pub works without rospy.numpy_msg 
 '''
-import os
+
 import sys
 
 import PIL
@@ -11,21 +12,20 @@ import torchvision.transforms as transforms
 import rclpy
 from rclpy.node import Node
 from rcl_interfaces.msg import ParameterDescriptor
-from ament_index_python.packages import get_package_share_directory
 from cv_bridge import CvBridge, CvBridgeError
 
-from rosutil import msg_to_torch
-from interestingness.torchutil import MovAvg, show_batch_box
 from sensor_msgs.msg import Image
-from interestingness_ros.msg import InterestInfo, UnInterests
-
-int_ros_dir = get_package_share_directory('interestingness_ros')
-int_dir = os.path.join(int_ros_dir,'interestingness')
+from interfaces.msg import InterestInfo, UnInterests
+int_ros_dir = ('/root/ros2_ws/src/interestingness_ros')
+int_dir = ('/root/ros2_ws/src/interestingness_ros/interestingness')
 sys.path.append(int_ros_dir)
 sys.path.append(int_dir)
+from interestingness_ros.rosutil import msg_to_torch
+from interestingness.online import MovAvg, show_batch_box
 
 
 class InterestNode(Node):
+
     def __init__(self):
         super().__init__("interestingness_node")
         self._init_parameters()
@@ -53,19 +53,20 @@ class InterestNode(Node):
         # Create publishers and subscribers
         for topic in self.image_topic:
             self.create_subscription(Image, topic, self.image_callback, 10)
-        # self.create_subscription(numpy_msg(UnInterests), topic, self.interaction_callback, 10) # TODO
-        self.frame_pub = self.create_publisher(Image, 'interestingness/image', 10) #publishes in image_callback
-        self.info_pub = self.create_publisher(numpy_msg(InterestInfo), 'interestingness/info', 10) #publishes in image_callback
+        self.create_subscription(UnInterests, self.interaction_topic, self.interaction_callback, 10) # TODO
+        self.frame_pub = self.create_publisher(Image, 'interestingness/image', 10) # publishes in image_callback
+        self.info_pub = self.create_publisher(InterestInfo, 'interestingness/info', 10) # publishes in image_callback. TODO
 
 
     def _init_parameters(self):
-        # Declare by list of tuples, each (name, default, descriptor)
+        # Declare each parameter {namespace.name} by list of tuples, each (name, default, descriptor) 
         self.declare_parameters(
+            namespace='',
             parameters=[
                 ('image-topic', ['/rs_front/color/image']),
                 ('interaction-topic', '/interaction/feature_map'), 
                 ('data-root', '/data/datasets', ParameterDescriptor(description='dataset root folder')), #unused
-                ('model-save', pack_path+'/saves/ae.pt.SubTF.n1000.mse', ParameterDescriptor(description='read model')),
+                ('model-save', int_dir+'/saves/ae.pt.SubTF.n1000.mse', ParameterDescriptor(description='read model')),
                 ('crop-size', 320, ParameterDescriptor(description='crop size')),
                 ('num-interest', 10, ParameterDescriptor(description='loss compute by grid')), #unused
                 ('skip-frames', 1, ParameterDescriptor(description='number of skip frame')), 
@@ -77,9 +78,9 @@ class InterestNode(Node):
         )
         # Get value of parameters
         self.image_topic, self.interaction_topic, self.model_save, self.crop_size, self.skip_frames, self.window_size, self.rr, self.wr = [
-                param.value for param in self.get_parameters(
-                    'image_topic', 'interaction_topic', 'model_save', 'crop_size', 'skip_frames', 'window_size', 'rr', 'wr'
-                )
+                param.value for param in self.get_parameters([
+                    'image-topic', 'interaction-topic', 'model-save', 'crop-size', 'skip-frames', 'window-size', 'rr', 'wr'
+                ])
         ]
 
 

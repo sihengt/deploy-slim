@@ -11,16 +11,18 @@ import sys
 import rclpy
 from rclpy.node import Node
 from rcl_interfaces.msg import ParameterDescriptor
-from ament_index_python.packages import get_package_share_directory
+# from ament_index_python.packages import get_package_share_directory
 
-from interestingness_ros.msg import InterestInfo
+from interfaces.msg import InterestInfo
 from visualization_msgs.msg import Marker 
-from interestingness.online import level_height
 
-int_ros_dir = get_package_share_directory('interestingness_ros')
-int_dir = os.path.join(int_ros_dir,'interestingness')
+# Need these paths for import to work correctly
+# int_ros_dir = get_package_share_directory('interestingness_ros')
+int_ros_dir = ('/root/ros2_ws/src/interestingness_ros')
+int_dir = ('/root/ros2_ws/src/interestingness_ros/interestingness')
 sys.path.append(int_ros_dir)
 sys.path.append(int_dir)
+from interestingness.online import level_height
 
 
 class InterestMarker(Node):
