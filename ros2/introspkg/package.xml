@@ -7,10 +7,15 @@
   <maintainer email="root@todo.todo">root</maintainer>
   <license>TODO: License declaration</license>
 
-  <depend>rclpy</depend>
-  <depend>visualization_msgs</depend>
-  <depend>sensor_msgs</depend>
-  <depend>cv_bridge</depend>
+  <exec_depend>numpy</exec_depend>
+  <exec_depend>PIL</exec_depend>
+  <exec_depend>torch</exec_depend>
+  <exec_depend>torchvision</exec_depend>
+  <exec_depend>rcl_interfaces</exec_depend>
+  <exec_depend>interfaces</exec_depend>
+  <exec_depend>visualization_msgs</exec_depend>
+  <exec_depend>sensor_msgs</exec_depend>
+  <exec_depend>cv_bridge</exec_depend>
 
   <test_depend>ament_copyright</test_depend>
   <test_depend>ament_flake8</test_depend>

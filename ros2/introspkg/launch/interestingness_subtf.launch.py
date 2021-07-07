@@ -1,3 +1,8 @@
+'''
+Main launch file. Starts the other launch files and rviz2.
+You can change the rviz2 config file path here.
+'''
+
 import os
 
 from ament_index_python.packages import get_package_share_directory
@@ -9,47 +14,47 @@ from launch.substitutions import LaunchConfiguration
 
 def generate_launch_description():
 
-    bringup_dir = get_package_share_directory('interestingness_ros')
+    int_ros_share = get_package_share_directory('interestingness_ros')
 
     # TODO: find out where to set use_sim_time
-    use_sim_time = LaunchConfiguration('use_sim_time')
-    declare_use_sim_time = DeclareLaunchArgument('use_sim_time', default='true')
+    # use_sim_time = LaunchConfiguration('use_sim_time')
+    # declare_use_sim_time = DeclareLaunchArgument('use_sim_time', default_value='true')
 
-    # TODO: pass this to interesting_launch to interestingness_node
     image_topic_list = LaunchConfiguration('image_topic_list')
     declare_image_topic_list = DeclareLaunchArgument('image_topic_list', 
-                                                     default='[/rs_front/color/image]')
+                                                     default_value='[/rs_front/color/image]')
 
     interestingness_launch = IncludeLaunchDescription(
                                 PythonLaunchDescriptionSource(
-                                    os.path.join(bringup_dir, "/launch/interestingness.launch.py")
-                                )
+                                    os.path.join(int_ros_share, "interestingness.launch.py"),
+                                ),
+                                launch_arguments={'image_topic_list':image_topic_list}.items()
                              )
 
     subtf_bags_launch = IncludeLaunchDescription(
                             PythonLaunchDescriptionSource(
-                                    os.path.join(bringup_dir, "/launch/subtf_bags.launch.py")
+                                    os.path.join(int_ros_share, "subtf_bags.launch.py")
                             )
                         )
-
+ 
     robot_launch = IncludeLaunchDescription(
                         PythonLaunchDescriptionSource(
-                                    os.path.join(bringup_dir, "/launch/robot.launch.py")
+                                    os.path.join(int_ros_share, "robot.launch.py")
                         )
                    )
 
-    rviz_node = Node(package="rviz",
-                executable="rviz",
-                name="rviz",
-                arguments=['-d', os.path.join(bringup_dir, '/rviz/subtf.rviz')]
+    rviz_node = Node(package="rviz2",
+                    executable="rviz2",
+                    name="rviz2",
+                    arguments=['-d', os.path.join(int_ros_share, 'subtf2.rviz')]
                 )
 
     ld = LaunchDescription()
-    ld.add_action(declare_use_sim_time)
+    # ld.add_action(declare_use_sim_time)
     ld.add_action(declare_image_topic_list)
     ld.add_action(interestingness_launch)
     ld.add_action(subtf_bags_launch)
-    ld.add_action(robot_launch)
+    # ld.add_action(robot_launch) # husky_gazebo is not in ROS2 yet
     ld.add_action(rviz_node)
 
     return ld

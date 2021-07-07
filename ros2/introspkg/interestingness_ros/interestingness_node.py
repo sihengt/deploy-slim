@@ -1,11 +1,12 @@
 '''
 Subscribes to image_topic & interaction_topic.
 Publishes to  interestingness/image & interestingness/info.
-TODO: test if interaction callback and info_pub works without rospy.numpy_msg 
+TODO: Test interaction callback. Likely data type error with UnInterests msg type. 
 '''
 
 import sys
 
+import numpy as np
 import PIL
 import torch
 import torchvision.transforms as transforms
@@ -34,10 +35,10 @@ class InterestNode(Node):
         self.bridge = CvBridge()
         self.movavg = MovAvg(self.window_size)
         self.transform = transforms.Compose([
-            # VerticalFlip(), # Front camera of UGV0 in SubTF is mounted vertical flipped. Uncomment this line when needed.
             transforms.CenterCrop(self.crop_size),
             transforms.Resize((self.crop_size, self.crop_size)),
             transforms.ToTensor()]
+            # VerticalFlip(), # Front camera of UGV0 in SubTF is mounted vertical flipped. Uncomment this line when needed.
         )
         self.normalize = transforms.Normalize(
             mean=[0.485, 0.456, 0.406], 
@@ -89,9 +90,8 @@ class InterestNode(Node):
         Process input image and pass to model which returns a loss.
         Publishes processed image and info to 2 different topics.
         '''
-        if msg.header.seq % self.skip_frames != 0:
-            return
-        self.get_logger.info(f"Received image {msg.header.frame_id}: {msg.header.seq}")
+        # if msg.header.seq % self.skip_frames != 0: #header does not contain seq
+        #     return
         try:
             frame = self.bridge.imgmsg_to_cv2(msg, "rgb8")
             frame = PIL.Image.fromarray(frame)
@@ -100,15 +100,16 @@ class InterestNode(Node):
         except CvBridgeError:
             self.get_logger().error(CvBridgeError)
         else:
+            self.get_logger().info(f"Received image: {msg.header}")
             frame = frame.cuda() if torch.cuda.is_available() else frame
             loss = self.net(frame)
             loss = self.movavg.append(loss)
-            frame = 255 * show_batch_box(frame, msg.header.seq, loss.item(),show_now=False)
+            frame = 255 * show_batch_box(frame, 6, loss.item(),show_now=False)
             frame_msg = self.bridge.cv2_to_imgmsg(frame.astype(np.uint8))
             info = InterestInfo()
             info.level = loss.item()
             info.image_shape = image.shape
-            info.image = image.view(-1).numpy()
+            info.image = image.view(-1).numpy() #TODO: type error as msg is float not np array. not used by interest_marker.
             info.shape = self.net.states.shape
             info.feature = self.net.states.cpu().view(-1).numpy()
             info.memory = self.net.coding.cpu().view(-1).numpy()
@@ -121,7 +122,7 @@ class InterestNode(Node):
         '''
         Writes information from uninteresting image into memory. 
         '''
-        self.get_logger().info(f'Received uninteresting feature maps {msg.header.seq}')
+        self.get_logger().info(f'Received uninteresting feature maps {msg.header.seq}') # likely need to remove seq
         coding = msg_to_torch(msg.feature, msg.shape)
         coding = coding.cuda() if torch.cuda.is_available() else coding
         self.net.memory.write(coding)

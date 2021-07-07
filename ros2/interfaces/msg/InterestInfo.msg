@@ -7,13 +7,13 @@ float32 level
 geometry_msgs/Pose pose
 
 # The image processed
-float32[] image
+float32[307200] image
 int32[] image_shape
 
 # The information of feature map / memory reading
-float32[] feature
-float32[] memory
+float32[51200] feature
+float32[51200] memory
 int32[] shape
 
 # The reading weights from visual memory
-float32[] reading_weights
+float32[100] reading_weights
